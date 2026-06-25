@@ -4,7 +4,7 @@ import urllib.parse
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 BOT_TOKEN = "8744804638:AAFfB_3UsZE6-9PbNc0Sf7CZrbhzPc4yDbA"
-GEMINI_KEY = "AQ.Ab8RN6ICRaJYLgHmfj7RDyJ1jFFCf1f6KH3olzt_Mg66Jwo9MA"
+GEMINI_KEY = "AQ.Ab8RN6JX_GSqp-BR2jFHYP38_VeJuNQNuqmKrcjKAJHnvtxvAw"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
 
 bot = telebot.TeleBot(BOT_TOKEN)
