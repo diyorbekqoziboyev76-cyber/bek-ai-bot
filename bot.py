@@ -92,88 +92,164 @@ def handle(m):
     text = m.text
 
     if text == "🖼 Rasm":
-        user_state[chat_id] = "rasm"
-        bot.send_message(chat_id, "🖼 Rasm tavsifini yozing:\nMisol: kichik bola o'ynayapti")
+        if text == "🖼 Rasm":
+    user_state[chat_id] = "rasm"
+    bot.send_message(chat_id, "🖼 Rasm tavsifini yozing:\nMisol: kichik bola o'ynayapti")
+    return
+
+if text == "🎵 Musiqa":
+    user_state[chat_id] = "musiqa"
+    bot.send_message(chat_id, "🎵 Musiqa tavsifini yozing:\nMisol: tinch lo-fi")
+    return
+
+if text == "🖼 Fon o'zgartir":
+    user_state[chat_id] = "fon"
+    bot.send_message(chat_id, "📸 Avval rasm yuboring.")
+    return
+
+if text == "🗣 Suhbat":
+    user_state[chat_id] = "chat"
+    bot.send_message(chat_id, "🗣 Savolingizni yozing:", reply_markup=menu())
+    return
+
+
+# RASM
+if state == "rasm":
+    user_state[chat_id] = "chat"
+    msg = bot.send_message(chat_id, "🎨 Rasm yaratilmoqda...")
+
+    try:
+        eng = tarjima(text)
+
+        prompt = f"ultra realistic, photorealistic, high detail, cinematic lighting, 4k, {eng}"
+
+        url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}?width=1024&height=1024&nologo=true"
+
+        r = requests.get(url, timeout=60)
+
+        if r.status_code == 200:
+            bot.delete_message(chat_id, msg.message_id)
+            bot.send_photo(
+                chat_id,
+                r.content,
+                caption=f"🖼 {text}",
+                reply_markup=menu()
+            )
+        else:
+            bot.edit_message_text(
+                f"❌ Xatolik: {r.status_code}",
+                chat_id,
+                msg.message_id
+            )
+
+    except Exception as e:
+        bot.edit_message_text(
+            f"❌ Xatolik:\n{e}",
+            chat_id,
+            msg.message_id
+        )
+
+    return
+
+
+# MUSIQA
+if state == "musiqa":
+    user_state[chat_id] = "chat"
+    msg = bot.send_message(chat_id, "🎵 Musiqa yaratilmoqda...")
+
+    try:
+        eng = tarjima(text)
+
+        url = f"https://audio.pollinations.ai/{urllib.parse.quote(eng)}"
+
+        r = requests.get(url, timeout=120)
+
+        if r.status_code == 200:
+            bot.delete_message(chat_id, msg.message_id)
+
+            bot.send_audio(
+                chat_id,
+                r.content,
+                caption=f"🎵 {text}",
+                reply_markup=menu()
+            )
+        else:
+            bot.edit_message_text(
+                f"❌ Xatolik: {r.status_code}",
+                chat_id,
+                msg.message_id
+            )
+
+    except Exception as e:
+        bot.edit_message_text(
+            f"❌ Xatolik:\n{e}",
+            chat_id,
+            msg.message_id
+        )
+
+    return
+
+
+# FON O'ZGARTIR
+if state == "fon":
+    user_state[chat_id] = "chat"
+
+    file_id = user_state.get(f"{chat_id}_photo")
+
+    if not file_id:
+        bot.send_message(
+            chat_id,
+            "❌ Avval rasm yuboring.",
+            reply_markup=menu()
+        )
         return
 
-    if text == "🎵 Musiqa":
-        user_state[chat_id] = "musiqa"
-        bot.send_message(chat_id, "🎵 Musiqa tavsifini yozing:\nMisol: tinch lo-fi")
-        return
+    msg = bot.send_message(chat_id, "🖼 Fon olib tashlanmoqda...")
 
-    if text == "🖼 Fon o'zgartir":
-        user_state[chat_id] = "fon"
-        bot.send_message(chat_id, "📸 Rasmingizni yuboring — fonini o'zgartiramiz!")
-        return
+    try:
+        file_info = bot.get_file(file_id)
 
-    if text == "🗣 Suhbat":
-        user_state[chat_id] = "chat"
-        bot.send_message(chat_id, "🗣 Savolingizni yozing:", reply_markup=menu())
-        return
+        file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
 
-    if state == "rasm":
-        user_state[chat_id] = "chat"
-        msg = bot.send_message(chat_id, "🎨 Rasm yaratilmoqda...")
-        try:
-            eng = tarjima(text)
-            url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(eng)},high quality,realistic,4k?width=1024&height=1024&nologo=true"
-            r = requests.get(url, timeout=60)
-            if r.status_code == 200 and len(r.content) > 1000:
-                bot.delete_message(chat_id, msg.message_id)
-                bot.send_photo(chat_id, r.content, caption=f"🖼 {text}", reply_markup=menu())
-            else:
-                bot.edit_message_text("❌ Xatolik, qayta urining.", chat_id, msg.message_id)
-        except:
-            bot.edit_message_text("❌ Xatolik, qayta urining.", chat_id, msg.message_id)
-        return
+        img_data = requests.get(file_url).content
 
-    if state == "musiqa":
-        user_state[chat_id] = "chat"
-        msg = bot.send_message(chat_id, "🎵 Musiqa yaratilmoqda...")
-        try:
-            eng = tarjima(text)
-            url = f"https://audio.pollinations.ai/{urllib.parse.quote(eng)}"
-            r = requests.get(url, timeout=120)
-            if r.status_code == 200 and len(r.content) > 1000:
-                bot.delete_message(chat_id, msg.message_id)
-                bot.send_audio(chat_id, r.content, caption=f"🎵 {text}", reply_markup=menu())
-            else:
-                bot.edit_message_text("❌ Musiqa yuklanmadi.", chat_id, msg.message_id)
-        except:
-            bot.edit_message_text("❌ Xatolik, qayta urining.", chat_id, msg.message_id)
-        return
+        r = requests.post(
+            "https://api.remove.bg/v1.0/removebg",
+            files={"image_file": img_data},
+            data={"size": "auto"},
+            headers={"X-Api-Key": REMOVEBG_KEY}
+        )
 
-    if state == "fon_tavsif":
-        user_state[chat_id] = "chat"
-        file_id = user_state.get(f"{chat_id}_photo")
-        if not file_id:
-            bot.send_message(chat_id, "❌ Rasm topilmadi, qayta yuboring.", reply_markup=menu())
-            return
-        msg = bot.send_message(chat_id, "🖼 Fon o'zgartirilmoqda...")
-        try:
-            file_info = bot.get_file(file_id)
-            file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
-            img_data = requests.get(file_url).content
-            
-            # Fonni o'chirish
-            r = requests.post("https://api.remove.bg/v1.0/removebg",
-                files={"image_file": img_data},
-                data={"size": "auto"},
-                headers={"X-Api-Key": REMOVEBG_KEY})
-            
-            if r.status_code == 200:
-                # Yangi fon yaratish
-                eng = tarjima(text)
-                bg_url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(eng)},high quality,4k?width=1024&height=1024&nologo=true"
-                bot.delete_message(chat_id, msg.message_id)
-                bot.send_photo(chat_id, r.content, caption=f"✅ Fon o'zgartirildi!", reply_markup=menu())
-            else:
-                bot.edit_message_text("❌ Xatolik, qayta urining.", chat_id, msg.message_id)
-        except:
-            bot.edit_message_text("❌ Xatolik, qayta urining.", chat_id, msg.message_id)
-        return
+        if r.status_code == 200:
+            bot.delete_message(chat_id, msg.message_id)
 
-    javob = suhbat(text)
-    bot.reply_to(m, javob, reply_markup=menu())
+            bot.send_document(
+                chat_id,
+                r.content,
+                visible_file_name="background_removed.png"
+            )
 
-bot.infinity_polling()
+            bot.send_message(
+                chat_id,
+                "✅ Fon olib tashlandi.",
+                reply_markup=menu()
+            )
+        else:
+            bot.edit_message_text(
+                f"❌ RemoveBG xatosi: {r.status_code}",
+                chat_id,
+                msg.message_id
+            )
+
+    except Exception as e:
+        bot.edit_message_text(
+            f"❌ Xatolik:\n{e}",
+            chat_id,
+            msg.message_id
+        )
+
+    return
+
+
+javob = suhbat(text)
+bot.reply_to(m, javob, reply_markup=menu())
