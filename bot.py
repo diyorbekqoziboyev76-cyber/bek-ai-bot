@@ -6,6 +6,7 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 BOT_TOKEN = "8744804638:AAFfB_3UsZE6-9PbNc0Sf7CZrbhzPc4yDbA"
 GEMINI_KEY = "Ab8RN6IO6cG1uDE5JRowFA2pWfedZLfpUmkp3WSBl7UgmW"
 GROQ_KEY = "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"
+REMOVEBG_KEY = "SX3ShdFpjCrppDhqAd2LS769"
 
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
