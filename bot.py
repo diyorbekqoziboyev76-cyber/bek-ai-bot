@@ -3,7 +3,7 @@ import requests
 import urllib.parse
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
-BOT_TOKEN = "8744804638:AAGAb_WcXtcqMlTgPk6DXkhslQGylL-Z_sc"
+BOT_TOKEN = "8744804638:AAG1MMNCoonI7-pM-XTktQhXzBx0jo_TSZ0"
 GEMINI_KEY = "Ab8RN6IO6cG1uDE5JRowFA2pWfedZLfpUmkp3WSBl7UgmW"
 GROQ_KEY = "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"
 REMOVEBG_KEY = "SX3ShdFpjCrppDhqAd2LS769"
