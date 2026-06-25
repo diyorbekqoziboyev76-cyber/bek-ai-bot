@@ -108,3 +108,15 @@ def handle(m):
     bot.reply_to(m, gemini(prompt), reply_markup=menu())
 
 bot.infinity_polling()
+def translate(text):
+    try:
+        r = requests.post(GROQ_URL,
+            headers={"Authorization": f"Bearer {GROQ_KEY}"},
+            json={
+                "model": "llama3-70b-8192",
+                "messages": [{"role": "user", "content": f"Translate this Uzbek text to English for image generation. Return ONLY English translation: {text}"}],
+                "max_tokens": 200
+            }, timeout=15)
+        return r.json()["choices"][0]["message"]["content"].strip()
+    except:
+        return text
