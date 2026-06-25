@@ -92,7 +92,6 @@ def handle(m):
     text = m.text
 
     if text == "🖼 Rasm":
-        if text == "🖼 Rasm":
     user_state[chat_id] = "rasm"
     bot.send_message(chat_id, "🖼 Rasm tavsifini yozing:\nMisol: kichik bola o'ynayapti")
     return
