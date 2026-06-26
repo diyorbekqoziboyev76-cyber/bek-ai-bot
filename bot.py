@@ -8,7 +8,7 @@ GEMINI_KEY = "AQ.Ab8RN6LOrCZc3jcsLZwLDVS8U_bvEYCjue4yPHpzZSZXUBOcsg"
 GROQ_KEY = "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"
 REMOVEBG_KEY = "DX6v26gdPDxczmVffiJmqxQC"
 
-GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 bot = telebot.TeleBot(BOT_TOKEN)
