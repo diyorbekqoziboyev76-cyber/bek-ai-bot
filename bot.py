@@ -33,7 +33,7 @@ def suhbat(text):
     return groq(SYSTEM, text) or gemini(f"{SYSTEM}\n\n{text}") or "Xatolik, qayta urining."
 
 def tarjima(text):
-    return groq("Translate to English only:", text) or gemini(f"Translate to English only: {text}") or text
+    return groq("Translate the Uzbek text to English image prompt only. Do not explain.", text) or text
 
 def menu():
     m = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
