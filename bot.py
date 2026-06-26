@@ -4,18 +4,20 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 BOT_TOKEN = "8744804638:AAEN9xm9WPCXH7daFScPrIzkZ1gfC59PNvs"
 GEMINI_KEY = "AQ.Ab8RN6LOrCZc3jcsLZwLDVS8U_bvEYCjue4yPHpzZSZXUBOcsg"
 GROQ_KEY = "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"
+OWNER_ID = "7709192535"
 
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 user_state = {}
+users = set()
 
 def tarjima(text):
     try:
         r = requests.post(GROQ_URL,
             headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
-            json={"model": "llama3-70b-8192", "messages": [{"role": "user", "content": f"Translate to English only: {text}"}], "max_tokens": 200},
+            json={"model": "llama3-70b-8192", "messages": [{"role": "user", "content": f"Translate to English only, no explanation: {text}"}], "max_tokens": 200},
             timeout=15)
         return r.json()["choices"][0]["message"]["content"].strip()
     except:
@@ -43,12 +45,10 @@ def tahrirla(m, chat_id, img_source, tavsif, is_link=False):
         else:
             fi = bot.get_file(img_source)
             img_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{fi.file_path}"
-        
         eng = tarjima(tavsif)
         prompt = urllib.parse.quote(f"{eng}, high quality, 4k, detailed")
         img_encoded = urllib.parse.quote(img_url)
         url = f"https://image.pollinations.ai/prompt/{prompt}?width=1024&height=1024&nologo=true&image={img_encoded}"
-        
         r = requests.get(url, timeout=90)
         if r.status_code == 200 and len(r.content) > 5000:
             bot.delete_message(chat_id, msg.message_id)
@@ -60,28 +60,51 @@ def tahrirla(m, chat_id, img_source, tavsif, is_link=False):
 
 @bot.message_handler(commands=["start"])
 def start(m):
-    user_state[m.chat.id] = "chat"
-    bot.send_message(m.chat.id,
+    chat_id = m.chat.id
+    user_state[chat_id] = "chat"
+    
+    # Yangi foydalanuvchi
+    if chat_id not in users:
+        users.add(chat_id)
+        name = m.from_user.first_name or "Noma'lum"
+        username = f"@{m.from_user.username}" if m.from_user.username else "yo'q"
+        try:
+            bot.send_message(OWNER_ID,
+                f"👤 Yangi foydalanuvchi!\n"
+                f"Ism: {name}\n"
+                f"Username: {username}\n"
+                f"ID: {chat_id}\n"
+                f"Jami: {len(users)} ta")
+        except:
+            pass
+    
+    bot.send_message(chat_id,
         "Assalomu alaykum! 👑 Men Bek_AI man!\n"
         "DIYORBEK tomonidan yaratilganman!\n\n"
         "📌 Ishlatish:\n"
         "🖼 Matn yozing — yangi rasm yaratadi\n"
         "📸 Rasm yuboring — tavsif so'raydi\n"
-        "🔗 URL + tavsif yozing — o'zgartiradi\n\n"
+        "🔗 URL yuboring — tavsif so'raydi\n\n"
         "Sinab ko'ring! 👇", reply_markup=menu())
+
+@bot.message_handler(commands=["stats"])
+def stats(m):
+    if m.chat.id == OWNER_ID:
+        bot.reply_to(m, f"📊 Statistika:\n👥 Jami foydalanuvchilar: {len(users)} ta")
+    else:
+        bot.reply_to(m, "❌ Siz admin emassiz!")
 
 @bot.message_handler(content_types=["photo"])
 def photo_handler(m):
     chat_id = m.chat.id
     file_id = m.photo[-1].file_id
     user_state[f"{chat_id}_photo"] = file_id
-    
     if m.caption:
         user_state[chat_id] = "chat"
         tahrirla(m, chat_id, file_id, m.caption, is_link=False)
     else:
         user_state[chat_id] = "tahrirla"
-        bot.send_message(chat_id, "✏️ Rasmga qanday o'zgartirish kiritay?\nMisol: fonni dengizga o'zgartir")
+        bot.send_message(chat_id, "✏️ Rasmga qanday o'zgartirish kiritay?")
 
 @bot.message_handler(func=lambda m: True)
 def handle(m):
@@ -91,19 +114,14 @@ def handle(m):
 
     if text == "🖼 Yangi rasm yaratish":
         user_state[chat_id] = "rasm"
-        bot.send_message(chat_id, "🖼 Qanday rasm chizay?\nMisol: kichik bola o'ynayapti")
+        bot.send_message(chat_id, "🖼 Qanday rasm chizay?")
         return
 
-    # URL + tavsif tekshirish
     lines = text.strip().split("\n")
     if len(lines) >= 2 and is_url(lines[0]):
-        url_link = lines[0]
-        tavsif = "\n".join(lines[1:])
-        user_state[chat_id] = "chat"
-        tahrirla(m, chat_id, url_link, tavsif, is_link=True)
+        tahrirla(m, chat_id, lines[0], "\n".join(lines[1:]), is_link=True)
         return
 
-    # Faqat URL
     if is_url(text):
         user_state[chat_id] = "url_tahrirla"
         user_state[f"{chat_id}_url"] = text
@@ -140,7 +158,6 @@ def handle(m):
             tahrirla(m, chat_id, url_link, text, is_link=True)
         return
 
-    # Yangi rasm yaratish
     msg = bot.send_message(chat_id, "🎨 Yaratilmoqda...")
     try:
         eng = tarjima(text)
@@ -154,4 +171,4 @@ def handle(m):
     except:
         bot.edit_message_text("❌ Xatolik, qayta urining.", chat_id, msg.message_id)
 
-bot.infinity_polling()              
+bot.infinity_polling()
